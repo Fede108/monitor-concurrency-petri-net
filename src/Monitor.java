@@ -166,7 +166,7 @@ public class Monitor implements MonitorInterface {
                                     //El hilo de la transicion T
                                     // se duerme,calculando cuánto tiempo falta para que la transición sea válida.
                                     esperas[t].await(red.getSleepTime(t), TimeUnit.MILLISECONDS);
-                                    //Despues de ese tiempo, se cambia la bandera y los hilos se despiertan 
+                                    //Despues de ese tiempo, se cambia la bandera y uno de los hilos se despiertan 
                                     red.setFlagEspera(t, 0.0);
                                     esperas[t].signal(); 
                                 } catch (InterruptedException e) {

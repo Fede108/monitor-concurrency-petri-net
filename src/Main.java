@@ -55,12 +55,11 @@ public class Main {
         //Es una lista anidada que machea la cantidad hilos a utilizar con la  cantidad de transiciones  que le corresponden.
         //Es una lista de "paquetes" de tareas.
         List<List<Integer>> transicionesPorSegmento = List.of(
-            List.of(0),            // Al segmento 1 , le corresponde la T0 
-            List.of(1),            // Al segmento 2, le corresponde la T1
-            List.of(2, 3, 4),      // Al segmento 3, le corresponde la T2,T3 y T4
-            List.of(5, 6),         // Al segmento 4, le corresponde la T5 y T6
-            List.of(7, 8, 9, 10),  // Al segmento 5, le corresponde de la T7 hasta la T10
-            List.of(11)            // Al segmento 6, le corresponde la T11
+            List.of(0,1),            // Al segmento 1 , le corresponde la T0 y T1                              
+            List.of(2, 3, 4),      // Al segmento 2, le corresponde la T2,T3 y T4
+            List.of(5, 6),         // Al segmento 3, le corresponde la T5 y T6
+            List.of(7, 8, 9, 10),  // Al segmento 4, le corresponde de la T7 hasta la T10
+            List.of(11)            // Al segmento 5, le corresponde la T11
         );
 
         int[] hilosPorSegmento = {
