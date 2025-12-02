@@ -26,7 +26,7 @@ public class Politica {
 
         this.tipo = tipo; // inicializa la politica con alguno de los 2 tipos
         this.random = new Random();
-        this.mapaClasificaion = new HashMap<>();
+        this.mapaClasificacion = new HashMap<>();
 
         mapaClasificacion.put(TipoProceso.SIMPLE, 5);
         mapaClasificacion.put(TipoProceso.INTERMEDIO, 2);
