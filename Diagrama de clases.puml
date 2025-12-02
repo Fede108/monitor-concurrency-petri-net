@@ -1,0 +1,98 @@
+@startuml
+
+interface MonitorInterface {
+    + boolean fireTransition(int t)
+}
+
+interface Runnable {
+    + void run()
+}
+
+class RedDePetri {
+    - matrizIncidencia : RealMatrix
+    - marcado : RealVector
+    - vectorDisparos : RealVector
+    - timeAlfa : RealVector
+    - timeStamp : RealVector
+    - flagEspera : RealVector
+    - inicioPrograma : double
+    - completados : int
+    - logger : Log
+
+    + RedDePetri(double[][] matrizIncidencia, double[] marcado, double[] sensibilizadasConTiempo)
+    + RealVector getSensibilizadas()
+    + void imprimirMarcado()
+    + void EcuacionDeEstado(int transicion)
+    - iniciarTiempo(RealVector anterior, RealVector nuevo)
+    + boolean testVentanadeTiempo(int t)
+    + int getNumTransiciones()
+    + boolean hilosEsperando(int t)
+    + boolean estaSensibilizada(int t)
+    + int getSleepTime(int t)
+    + void setFlagEspera(int t, double valor)
+    + void setInvariantesCompletados(int t)
+    + boolean getInvariantesCompletados()
+    + boolean verificarInvariantes()
+}
+
+class Monitor implements MonitorInterface {
+    - lock : ReentrantLock
+    - conds : Condition[]
+    - esperas : Condition[]
+    - red : RedDePetri
+    - politica : Politica
+    - sensibilizadas : RealVector
+    - quienesEstan : RealVector
+
+    + Monitor(RedDePetri red, Politica politica)
+    - void quienesEstan()
+    + boolean fireTransition(int t)
+}
+
+class Politica {
+    enum TipoPolitica { ALEATORIA, PRIORIZADA }
+    enum TipoProceso { SIMPLE, INTERMEDIO, COMPLEJO }
+
+    - tipo : TipoPolitica
+    - random : Random
+    - mapaClasificaion : HashMap<TipoProceso, Integer>
+
+    + Politica(TipoPolitica tipo)
+    + Integer seleccionarTransicion(RealVector resultado)
+    - Integer seleccionarAleatorio(RealVector resultado)
+    - Integer seleccionarPriorizado(RealVector resultado)
+}
+
+class Task implements Runnable {
+    - monitor : Monitor
+    - transiciones : ArrayList<Integer>
+
+    + Task(Monitor monitor, List<Integer> transiciones)
+    + void run()
+}
+
+class Main {
+    + static void main(String[] args)
+}
+
+class Log {
+    - writer : BufferedWriter
+
+    + Log(String filename)
+    + synchronized void log(String s)
+    + void close()
+}
+
+' Relaciones
+
+Main --> RedDePetri
+Main --> Politica
+Main --> Monitor
+Main --> Task
+
+Monitor --> RedDePetri
+Monitor --> Politica
+
+RedDePetri --> Log
+
+@enduml
