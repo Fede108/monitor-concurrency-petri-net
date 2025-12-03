@@ -38,16 +38,15 @@ public class Main {
             0   // P11
         };
                                                     //   T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11
-        double[] sensibilizadasConTiempo = new double[] { 0, 30, 0, 0, 200, 0 , 50, 0, 50, 250, 40, 0 }; //ms
+        double[] sensibilizadasConTiempo = new double[] { 0, 50, 0, 50, 50, 0 , 50, 0, 50, 50, 50, 0 }; //ms
 
         // Crear RedDePetri y monitor de concurrencia
         RedDePetri red    = new RedDePetri(matrizIncidencia, marcadoInicial, sensibilizadasConTiempo);
-        Politica politica = new Politica(Politica.TipoPolitica.ALEATORIA);
+        Politica politica = new Politica(Politica.TipoPolitica.PRIORIZADA);
         Monitor monitor   = new Monitor(red,politica);
 
         List<List<Integer>> transicionesPorSegmento = List.of(
-            List.of(0),            // segmento 1
-            List.of(1),            // segmento 2
+            List.of(0,1),            // segmento 1
             List.of(2, 3, 4),      // segmento 3
             List.of(5, 6),         // segmento 4
             List.of(7, 8, 9, 10),  // segmento 5
@@ -56,10 +55,9 @@ public class Main {
 
         int[] hilosPorSegmento = {
             1,  // 1 hilos para T0
-            2,  // 2 hilo  para T1
-            1,  // 1 hilos para T2,T3,T4
-            1,  // 1 hilo  para T5,T6
-            1,  // 1 hilos para T7,T8,T9,T10
+            2,  // 1 hilos para T2,T3,T4
+            2,  // 1 hilo  para T5,T6
+            2,  // 1 hilos para T7,T8,T9,T10
             2   // 2 hilos para T11
         };
 
