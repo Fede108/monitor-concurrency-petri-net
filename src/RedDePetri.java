@@ -33,8 +33,8 @@ public class RedDePetri {
 
 
         timeAlfa   = MatrixUtils.createRealVector(sensibilizadasConTiempo);
-        timeStamp  = new ArrayRealVector(matrizIncidencia[0].length);
-        flagEspera = new ArrayRealVector(matrizIncidencia[0].length);
+        timeStamp  = new ArrayRealVector(this.matrizIncidencia.getColumnDimension());
+        flagEspera = new ArrayRealVector(this.matrizIncidencia.getColumnDimension());
         inicioPrograma = System.currentTimeMillis();
 
 

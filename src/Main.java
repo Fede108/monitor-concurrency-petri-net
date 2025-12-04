@@ -55,9 +55,9 @@ public class Main {
 
         int[] hilosPorSegmento = {
             1,  // 1 hilos para T0
-            2,  // 1 hilos para T2,T3,T4
-            2,  // 1 hilo  para T5,T6
-            2,  // 1 hilos para T7,T8,T9,T10
+            1,  // 1 hilos para T2,T3,T4
+            1,  // 1 hilo  para T5,T6
+            1,  // 1 hilos para T7,T8,T9,T10
             2   // 2 hilos para T11
         };
 
