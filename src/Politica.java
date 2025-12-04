@@ -19,17 +19,17 @@ public class Politica {
     private TipoPolitica tipo;
 
     private Random random;
-    private HashMap<TipoProceso, Integer> mapaClasificaion;
+    private HashMap<TipoProceso, Integer> mapaClasificacion;
 
     public Politica(TipoPolitica tipo) {
 
         this.tipo = tipo; // inicializa la politica con alguno de los 2 tipos
         this.random = new Random();
-        this.mapaClasificaion = new HashMap<>();
+        this.mapaClasificacion = new HashMap<>();
 
-        mapaClasificaion.put(TipoProceso.SIMPLE, 5);
-        mapaClasificaion.put(TipoProceso.INTERMEDIO, 2);
-        mapaClasificaion.put(TipoProceso.COMPLEJO, 7);
+        mapaClasificacion.put(TipoProceso.SIMPLE, 5);
+        mapaClasificacion.put(TipoProceso.INTERMEDIO, 2);
+        mapaClasificacion.put(TipoProceso.COMPLEJO, 7);
 
     }
 
@@ -73,12 +73,12 @@ public class Politica {
     private Integer seleccionarPriorizado(RealVector resultado) {
         Integer transicionSeleccionada = seleccionarAleatorio(resultado);
         if (transicionSeleccionada != null &&
-            (transicionSeleccionada.equals(mapaClasificaion.get(TipoProceso.SIMPLE)) ||
-             transicionSeleccionada.equals(mapaClasificaion.get(TipoProceso.INTERMEDIO)) ||
-             transicionSeleccionada.equals(mapaClasificaion.get(TipoProceso.COMPLEJO)))) 
+            (transicionSeleccionada.equals(mapaClasificacion.get(TipoProceso.SIMPLE)) ||
+             transicionSeleccionada.equals(mapaClasificacion.get(TipoProceso.INTERMEDIO)) ||
+             transicionSeleccionada.equals(mapaClasificacion.get(TipoProceso.COMPLEJO)))) 
         {
-            if (resultado.getEntry(mapaClasificaion.get(TipoProceso.SIMPLE)) == 1.0) {
-                return mapaClasificaion.get(TipoProceso.SIMPLE);
+            if (resultado.getEntry(mapaClasificacion.get(TipoProceso.SIMPLE)) == 1.0) {
+                return mapaClasificacion.get(TipoProceso.SIMPLE);
             } else{
                    return transicionSeleccionada;
             }

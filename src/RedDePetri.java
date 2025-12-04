@@ -52,16 +52,16 @@ public class RedDePetri {
     */
     public RealVector getSensibilizadas()
     {
-        int numTrans = matrizIncidencia.getColumnDimension(); 
-        RealVector sensibilizadas = new ArrayRealVector(numTrans);
+        int numTrans = matrizIncidencia.getColumnDimension();  //Variable con el total de transiciones
+        RealVector sensibilizadas = new ArrayRealVector(numTrans); //Vector con el total de transiciones
 
         // para cada transición se comprueba el marcado resultante de dispararla
         for(int transicion = 0; transicion<numTrans; transicion++)
         {
-            RealVector columna   = matrizIncidencia.getColumnVector(transicion);
+            RealVector columna   = matrizIncidencia.getColumnVector(transicion); 
             // resultado es el vector con el marcado resultante de disparar la transición
-            RealVector resultado = marcado.add(columna);
-            boolean    valido    = true;
+            RealVector resultado = marcado.add(columna); 
+            boolean    valido    = true;  
             for(double valor: resultado.toArray())
             {
                 if(valor<0) // si una marca es negativa faltan tokens para disparar la transición
@@ -70,7 +70,7 @@ public class RedDePetri {
                     break;
                 }
             }
-            sensibilizadas.setEntry(transicion, valido ? 1.0 : 0.0);
+            sensibilizadas.setEntry(transicion, valido ? 1.0 : 0.0); //Si es 1 esta sensibilizada
         }
         return sensibilizadas;
     }
@@ -105,7 +105,7 @@ public class RedDePetri {
         actual  = getSensibilizadas(); // actual guarda las transiciones sensibilizadas despues del disparo 
         System.out.printf("T%d disparada(Thread: %s)\n", transicion, Thread.currentThread().getName());
         iniciarTiempo(anterior, actual);
-        logger.log("T" + transicion);
+        logger.log("T" + transicion); //Cada vez que se dispara una transición, se loguea 
         setInvariantesCompletados(transicion); 
     }
 
