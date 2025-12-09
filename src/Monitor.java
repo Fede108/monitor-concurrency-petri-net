@@ -1,17 +1,21 @@
 package src;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
 public class Monitor implements MonitorInterface {
     
-    private final ReentrantLock lock = new ReentrantLock(true);
-    private final Condition[] conds;
-    private final Condition[] esperas;
+    private final Semaphore mutex = new Semaphore(1);
+    private final Semaphore[] conds;
+    private final Semaphore[] esperas;
+
+    // Para contar cuantos hilos en conds y esperas 
+    private final int[] condWaiters;
+    private final int[] esperaWaiters;
+       
     
     private RedDePetri red;
     private Politica politica;
@@ -29,11 +33,15 @@ public class Monitor implements MonitorInterface {
 
         quienesEstan = new ArrayRealVector(red.getNumTransiciones());
 
-        conds   = new Condition[red.getNumTransiciones()];
-        esperas = new Condition[red.getNumTransiciones()];
+        conds   = new Semaphore[red.getNumTransiciones()];
+        esperas = new Semaphore[red.getNumTransiciones()];
+
+        condWaiters = new int[red.getNumTransiciones()];
+        esperaWaiters = new int[red.getNumTransiciones()];
+
         for (int i = 0; i < red.getNumTransiciones(); i++) {
-            conds[i]   = lock.newCondition();
-            esperas[i] = lock.newCondition();
+            conds[i]   = new Semaphore(0);
+            esperas[i] = new Semaphore(0); 
         }
     }
 
@@ -42,21 +50,39 @@ public class Monitor implements MonitorInterface {
      */
     private void quienesEstan() {
         for (int i = 0; i < red.getNumTransiciones(); i++) {
-            quienesEstan.setEntry(i, lock.hasWaiters(conds[i]) ? 1.0 : 0.0);
+            quienesEstan.setEntry(i, condWaiters[i]>0 ? 1.0 : 0.0);
         }
     }
 
+    private void despertarTodos(){
+        for(int i = 0; i<red.getNumTransiciones(); i++){
+            int nConds = condWaiters[i];
+            int nEsperas = esperaWaiters[i];
+            for(int k = 0; k < nConds; k++){
+                conds[i].release();
+
+            }
+
+            for(int k = 0 ; k<nEsperas; k ++ ){
+
+                esperas[i].release();
+            }
+        }
+
+    }
     /**
      * Se dispara la transición t si está sensibilizada y selecciona la siguiente a disparar
      * según la política.
      */
     @Override
     public boolean fireTransition(int t) {
-        lock.lock();
-        System.out.printf("T%d monitor ocupado \n", t);
+        
     
         try {
-        
+            
+            mutex.acquire();
+            System.out.printf("T%d monitor ocupado \n",t);
+
             while (true){
 
                 /**
@@ -64,8 +90,8 @@ public class Monitor implements MonitorInterface {
                  * las colas de condicion y en la colas de esperas
                  */
                 if (red.getInvariantesCompletados()) {   
-                    for (Condition e : esperas) e.signalAll();
-                    for (Condition c : conds) c.signalAll();
+                    despertarTodos();
+                    mutex.release();
                     return false;
                 }
 
@@ -94,8 +120,12 @@ public class Monitor implements MonitorInterface {
 
                     Integer elegido = politica.seleccionarTransicion(resultado);
                     if(elegido != null) {
-                        conds[elegido].signal();
+                        if (condWaiters[elegido]>0){
+                            conds[elegido].release();
+
+                        }
                     }  
+                    mutex.release();
                     return true;
                    
                 } else {
@@ -105,21 +135,48 @@ public class Monitor implements MonitorInterface {
                      */
                        if(red.hilosEsperando(t)){
                                 System.out.printf("T%d con hilos esperando (Thread: %s)\n", t, Thread.currentThread().getName());
+                                esperaWaiters[t]++;
+                                mutex.release();
                                 try {
-                                    esperas[t].await();
+                                    esperas[t].acquire();
                                 } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                                    Thread.currentThread().interrupt();
+                                }finally{
+                                    mutex.acquire();
+                                    esperaWaiters[t]--;
                                 }
+
+                                
                             } else{
                                 System.out.printf("T%d fuera de ventana de tiempo (Thread: %s)\n", t, Thread.currentThread().getName());
-                                try {
+                                try{
                                     red.setFlagEspera(t, 1.0);
-                                    esperas[t].await(red.getSleepTime(t), TimeUnit.MILLISECONDS);
+                                    int sleepTime = red.getSleepTime(t);
+
+                                    esperaWaiters[t]++;
+                                    mutex.release();
+
+                                    try{
+                                        esperas[t].tryAcquire(sleepTime,TimeUnit.MILLISECONDS);
+
+                                    }catch(InterruptedException e){
+                                        Thread.currentThread().interrupt();
+                                        return false;
+                                    }finally{
+                                        mutex.acquire();
+                                        esperaWaiters[t]--;
+                                    }
                                     red.setFlagEspera(t, 0.0);
-                                    esperas[t].signal(); 
-                                } catch (InterruptedException e) {
+                                    if (esperaWaiters[t]>0) {
+                                        esperas[t].release();
+                                        
+                                    }
+
+                                }catch(Exception e){
                                     e.printStackTrace();
                                 }
+
+                                
                             }
                     } 
                      /**
@@ -129,19 +186,32 @@ public class Monitor implements MonitorInterface {
                         System.out.printf("T%d no sensibilizada \n", t);
                         System.out.printf("T%d monitor liberado \n", t);
                         // disparo fallido se espera en la variable de condición t
+                        condWaiters[t]++;
+                        mutex.release();
                         try {
-                            conds[t].await();
+                            conds[t].acquire();
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
+                            return false;
+                        }finally{
+                            mutex.acquire();
+                            condWaiters[t]--;
                         }   
                         // al volver de await tenemos el lock de nuevo y repetimos
                         System.out.printf("T%d monitor ocupado \n", t);
                     }
                 }
             }
+
+        }catch(InterruptedException e){
+            Thread.currentThread().interrupt();
+            return false;
         } finally {
-            System.out.printf("T%d monitor liberado \n", t);
-            lock.unlock();
+            
+           if (mutex.availablePermits()== 0){
+                System.out.printf("T%d monitor liberado \n", t);
+                mutex.release();
+           }
         }
     }
 }
