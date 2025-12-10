@@ -1,6 +1,7 @@
 package src;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -11,6 +12,7 @@ public class Monitor implements MonitorInterface {
     private final Semaphore mutex = new Semaphore(1);
     private final Semaphore[] conds;
     private final Semaphore[] esperas;
+    private boolean flagDespertar = true;
 
     // Para contar cuantos hilos en conds y esperas 
     private final int[] condWaiters;
@@ -55,6 +57,7 @@ public class Monitor implements MonitorInterface {
     }
 
     private void despertarTodos(){
+    
         for(int i = 0; i<red.getNumTransiciones(); i++){
             int nConds = condWaiters[i];
             int nEsperas = esperaWaiters[i];
@@ -70,6 +73,14 @@ public class Monitor implements MonitorInterface {
         }
 
     }
+
+
+    
+
+
+
+
+
     /**
      * Se dispara la transición t si está sensibilizada y selecciona la siguiente a disparar
      * según la política.
@@ -90,7 +101,10 @@ public class Monitor implements MonitorInterface {
                  * las colas de condicion y en la colas de esperas
                  */
                 if (red.getInvariantesCompletados()) {   
-                    despertarTodos();
+                    if (flagDespertar == true){
+                        despertarTodos(); 
+                        flagDespertar = false;
+                    }
                     mutex.release();
                     return false;
                 }
@@ -153,19 +167,13 @@ public class Monitor implements MonitorInterface {
                                     red.setFlagEspera(t, 1.0);
                                     int sleepTime = red.getSleepTime(t);
 
-                                    esperaWaiters[t]++;
                                     mutex.release();
 
-                                    try{
-                                        esperas[t].tryAcquire(sleepTime,TimeUnit.MILLISECONDS);
+                                    Thread.sleep(sleepTime); 
+                                     
+                                    
+                                    mutex.acquire(); 
 
-                                    }catch(InterruptedException e){
-                                        Thread.currentThread().interrupt();
-                                        return false;
-                                    }finally{
-                                        mutex.acquire();
-                                        esperaWaiters[t]--;
-                                    }
                                     red.setFlagEspera(t, 0.0);
                                     if (esperaWaiters[t]>0) {
                                         esperas[t].release();
@@ -197,7 +205,7 @@ public class Monitor implements MonitorInterface {
                             mutex.acquire();
                             condWaiters[t]--;
                         }   
-                        // al volver de await tenemos el lock de nuevo y repetimos
+                        
                         System.out.printf("T%d monitor ocupado \n", t);
                     }
                 }
@@ -206,12 +214,6 @@ public class Monitor implements MonitorInterface {
         }catch(InterruptedException e){
             Thread.currentThread().interrupt();
             return false;
-        } finally {
-            
-           if (mutex.availablePermits()== 0){
-                System.out.printf("T%d monitor liberado \n", t);
-                mutex.release();
-           }
         }
     }
 }

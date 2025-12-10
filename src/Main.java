@@ -42,7 +42,7 @@ public class Main {
 
         // Crear RedDePetri y monitor de concurrencia
         RedDePetri red    = new RedDePetri(matrizIncidencia, marcadoInicial, sensibilizadasConTiempo);
-        Politica politica = new Politica(Politica.TipoPolitica.PRIORIZADA);
+        Politica politica = new Politica(Politica.TipoPolitica.ALEATORIA);
         Monitor monitor   = new Monitor(red,politica);
 
         List<List<Integer>> transicionesPorSegmento = List.of(
@@ -54,7 +54,7 @@ public class Main {
         );
 
         int[] hilosPorSegmento = {
-            1,  // 1 hilos para T0,T1
+            2,  // 1 hilos para T0,T1
             1,  // 1 hilos para T2,T3,T4
             1,  // 1 hilo  para T5,T6
             1,  // 1 hilos para T7,T8,T9,T10
