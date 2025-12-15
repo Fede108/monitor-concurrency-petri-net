@@ -1,7 +1,5 @@
 package src;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -34,7 +32,6 @@ public class Monitor implements MonitorInterface {
         this.politica = politica;
 
         quienesEstan = new ArrayRealVector(red.getNumTransiciones());
-
         conds   = new Semaphore[red.getNumTransiciones()];
         esperas = new Semaphore[red.getNumTransiciones()];
 
@@ -171,7 +168,6 @@ public class Monitor implements MonitorInterface {
 
                                     Thread.sleep(sleepTime); 
                                      
-                                    
                                     mutex.acquire(); 
 
                                     red.setFlagEspera(t, 0.0);

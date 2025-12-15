@@ -23,7 +23,7 @@ public class Log {
      * Se hace flush para asegurar que se escriba inmediatamente.
      * @param s texto a escribir (ejemplo: "T1" o "10201" para un marcado).
      */
-    public synchronized void log(String s) {
+    public void log(String s) {
         try {
             writer.write(s);
             writer.flush();
