@@ -131,10 +131,9 @@ public class Monitor implements MonitorInterface {
 
                     Integer elegido = politica.seleccionarTransicion(resultado);
                     if(elegido != null) {
-                        if (condWaiters[elegido]>0){
-                            conds[elegido].release();
 
-                        }
+                        conds[elegido].release();
+                        
                     }  
                     mutex.release();
                     return true;
